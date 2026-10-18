@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-stone-950 text-stone-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Hybride Intégrale - TSF & Monde</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <style>
+        .font-radio { font-family: 'Special Elite', cursive; }
+        .font-dial { font-family: 'Courier Prime', monospace; }
+        .font-brand { font-family: 'Cinzel', serif; }
+
+        .wood-casing {
+            background-color: #3b1d11;
+            background-image:
+                radial-gradient(ellipse at center, rgba(82, 38, 19, 0.8) 0%, rgba(26, 12, 6, 0.95) 100%),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 4px);
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), inset 0 -5px 15px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.9);
+            border: 4px solid #231008;
+        }
+        .bakelite-knob {
+            background: radial-gradient(circle at 35% 35%, #58534e 0%, #1c1917 70%, #0c0a09 100%);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.4);
+        }
+
+        /* ---------- Cadran ---------- */
+        .dial-glass {
+            background: radial-gradient(circle at 50% 50%, #451a03 0%, #1e0902 85%, #0f0401 100%);
+            border: 3px solid #78350f;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 0 15px rgba(245, 158, 11, 0.2);
+            position: relative;
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+        }
+        .dial-glass-lit-amber { background: radial-gradient(circle at 50% 45%, #8a4210 0%, #3f1a06 80%, #1a0802 100%) !important; box-shadow: inset 0 0 20px rgba(0,0,0,.7), 0 0 25px rgba(245,158,11,.5) !important; }
+        .dial-glass-lit-green { background: radial-gradient(circle at 50% 45%, #0b6b4f 0%, #043b2d 80%, #020617 100%) !important; box-shadow: inset 0 0 20px rgba(0,0,0,.7), 0 0 25px rgba(16,185,129,.5) !important; }
+        .dial-glass-lit-blue { background: radial-gradient(circle at 50% 45%, #2347a8 0%, #172554 80%, #020617 100%) !important; box-shadow: inset 0 0 20px rgba(0,0,0,.7), 0 0 25px rgba(59,130,246,.5) !important; }
+
+        .dial-surface { position: relative; cursor: ew-resize; touch-action: none; outline-offset: -3px; }
+        #dial-canvas { display: block; width: 100%; height: 175px; }
+        .needle { position: absolute; top: 0; bottom: 0; left: 0; width: 0; pointer-events: none; will-change: transform; }
+        .needle::before { content: ''; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px; background: linear-gradient(#ff5a4d, #b91c1c); box-shadow: 0 0 8px #ef4444, 0 0 18px rgba(239,68,68,.55); }
+        .needle::after { content: ''; position: absolute; left: -8px; top: 0; width: 16px; height: 16px; border-radius: 0 0 50% 50%; background: radial-gradient(circle at 35% 30%, #ffc4ba, #ef4444 60%, #7f1d1d); box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+        .needle-tag { position: absolute; top: 22px; left: 0; transform: translateX(-50%); white-space: nowrap; font-family: 'Courier Prime', monospace; font-size: 11px; font-weight: 700; color: #fff4dc; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.25); padding: 1px 6px; border-radius: 4px; opacity: 0; transition: opacity .15s; }
+        .digits { font-family: 'Courier Prime', monospace; font-weight: 700; letter-spacing: .06em; }
+
+        /* ---------- Bouton d'accord ---------- */
+        .tune-knob {
+            width: 112px; height: 112px; border-radius: 50%; position: relative; cursor: grab; touch-action: none; flex: none;
+            background:
+                radial-gradient(circle, #0b0908 0 61%, transparent 62%),
+                repeating-conic-gradient(from 0deg, #4a443f 0 4deg, #1a1715 4deg 8deg);
+            box-shadow: 0 10px 18px rgba(0,0,0,.85), inset 0 2px 3px rgba(255,255,255,.25);
+        }
+        .tune-knob:active { cursor: grabbing; }
+        .knob-face {
+            position: absolute; inset: 13px; border-radius: 50%; will-change: transform;
+            background: radial-gradient(circle at 35% 30%, #6e665e 0%, #28231f 55%, #0d0b0a 100%);
+            box-shadow: inset 0 2px 4px rgba(255,255,255,.3), inset 0 -4px 8px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.7);
+        }
+        .knob-mark { position: absolute; left: 50%; top: 7px; width: 5px; height: 17px; margin-left: -2.5px; border-radius: 3px; background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,.7); }
+
+        /* ---------- Touches de piano ---------- */
+        .piano { display: flex; gap: 3px; }
+        .pkey {
+            flex: 1; background: linear-gradient(#f1e9d6, #cbbfa4); color: #2b2118; border: 1px solid #6b5a42; border-bottom-width: 6px;
+            border-radius: 4px 4px 2px 2px; padding: 7px 0 5px; font-family: 'Courier Prime', monospace; font-size: 12px; font-weight: 700;
+            cursor: pointer; letter-spacing: .05em; transition: transform .06s, border-bottom-width .06s;
+        }
+        .pkey[aria-pressed="true"] { transform: translateY(4px); border-bottom-width: 2px; background: linear-gradient(#d9ceb6, #b5a78a); box-shadow: inset 0 3px 5px rgba(0,0,0,.4); }
+
+        .magic-eye-wrap { width: 56px; height: 56px; border-radius: 50%; background: #0c1210; border: 3px solid #1e293b; box-shadow: inset 0 0 10px rgba(0,0,0,.8); overflow: hidden; }
+        .speaker-grille {
+            background-color: #271c19;
+            background-image: repeating-linear-gradient(45deg, #44322d 0, #44322d 2px, transparent 0, transparent 8px), repeating-linear-gradient(-45deg, #18100e 0, #18100e 2px, #271c19 0, #271c19 8px);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9); border: 2px solid #3d2820;
+        }
+        .mode-panel { display: none; }
+        .mode-panel.active { display: block; }
+        :focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+        /* ---------- Thèmes, mode clair, mobile ---------- */
+        html[data-acc] .text-amber-400, html[data-acc] .text-amber-500, html[data-acc] .text-amber-600 { color: var(--acc) !important; }
+        html[data-acc] .bg-amber-500, html[data-acc] .bg-amber-600 { background-color: var(--acc) !important; }
+        html[data-acc] input[type="range"] { accent-color: var(--acc); }
+        html[data-acc] .knob-mark { background: var(--acc); box-shadow: 0 0 6px var(--acc); }
+        html[data-acc] .wood-casing { background-color: var(--c1); background-image: radial-gradient(ellipse at center, var(--c2) 0%, var(--c1) 100%), repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0, rgba(0,0,0,.12) 1px, transparent 1px, transparent 4px); border-color: var(--c3); }
+        html[data-lc] .wood-casing .text-stone-300, html[data-lc] .wood-casing .text-stone-400, html[data-lc] .wood-casing .text-amber-700\/90, html[data-lc] .wood-casing .text-amber-700 { color: #2b2118 !important; }
+        html.light .bg-stone-950 { background-color: #f4ecdc !important; }
+        html.light .bg-stone-900, html.light .bg-stone-900\/60, html.light .bg-stone-900\/80 { background-color: #fffaf0 !important; }
+        html.light .bg-stone-800 { background-color: #e8dcc4 !important; }
+        html.light .border-stone-800, html.light .border-stone-700 { border-color: #d3c4a4 !important; }
+        html.light .text-stone-100, html.light .text-stone-200, html.light .text-stone-300 { color: #2b2118 !important; }
+        html.light .text-stone-400, html.light .text-stone-500 { color: #6b5a42 !important; }
+        html.light select, html.light input[type="text"], html.light input[type="time"] { background-color: #fffaf0 !important; }
+        html.light .wood-casing .bg-stone-900\/60 { background-color: rgba(28,25,23,.8) !important; }
+        html.light .wood-casing .border-stone-800 { border-color: #292524 !important; }
+        html.light .wood-casing .text-stone-300, html.light .wood-casing .text-stone-400 { color: #d6cbb8 !important; }
+        html.light[data-lc] .wood-casing .text-stone-300, html.light[data-lc] .wood-casing .text-stone-400 { color: #2b2118 !important; }
+        .mem { background: #1c1917; color: var(--acc, #f59e0b); border: 1px solid #44403c; border-radius: 6px; font: 700 11px 'Courier Prime', monospace; padding: 6px 0; cursor: pointer; }
+        .mem.set { border-color: var(--acc, #f59e0b); }
+        .mem:hover { background: #292524; }
+        @media (max-width: 640px) { .pkey { padding: 12px 0 10px; font-size: 13px; } .tune-knob { width: 132px; height: 132px; } .mem { padding: 11px 0; } #btn-power { width: 40px; height: 40px; } }
+    </style>
+</head>
+<body class="h-full bg-stone-950 text-stone-200 flex flex-col justify-between select-none font-radio overflow-x-hidden">
+
+    <header class="bg-stone-900 border-b border-stone-800 p-3 flex flex-wrap justify-between items-center z-30 gap-3">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-amber-900/40 text-amber-500 rounded border border-amber-700/50"><i class="fa-solid fa-radio text-xl"></i></div>
+            <div>
+                <h1 class="text-base md:text-lg font-bold tracking-wider text-amber-500 font-brand">RADIO TSF 1948 World KW</h1>
+                <p class="text-xs text-stone-400 font-dial">Récepteur à cadran + lecteur moderne + stations du monde</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 bg-stone-950 p-1.5 rounded-xl border border-stone-800 font-dial text-xs">
+            <button id="btn-mode-tsf" class="px-3 py-1.5 rounded-lg font-bold bg-amber-600 text-stone-950 transition">TSF 1948</button>
+            <button id="btn-mode-modern" class="px-3 py-1.5 rounded-lg font-bold text-stone-400 hover:text-stone-200 transition">Moderne</button>
+            <button id="btn-mode-compact" class="px-3 py-1.5 rounded-lg font-bold text-stone-400 hover:text-stone-200 transition">Compact</button>
+        </div>
+        <div class="flex items-center space-x-3 text-xs font-dial">
+            <button id="btn-ambient" class="bg-stone-800 hover:bg-stone-700 text-amber-500 px-3 py-1.5 rounded border border-stone-700 flex items-center space-x-2 transition">
+                <i class="fa-solid fa-lightbulb"></i><span id="ambient-label">Sombre</span>
+            </button>
+        </div>
+    </header>
+
+    <main id="main-frame" class="flex-grow p-4 md:p-6 flex flex-col items-center justify-center relative bg-stone-950">
+        <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <div class="lg:col-span-8 w-full">
+
+                <!-- 1. MODE VINTAGE TSF -->
+                <div id="mode-tsf" class="mode-panel active wood-casing rounded-3xl p-5 md:p-6 relative">
+                    <div class="flex justify-between items-center mb-4 border-b border-amber-900/40 pb-3">
+                        <div>
+                            <span class="font-brand text-xl font-extrabold text-amber-600 tracking-widest block">Radio Kami Wolf</span>
+                            <span class="text-[10px] text-amber-700 font-dial tracking-wider uppercase">Type RA49 - Super-Hétérodyne - 4 gammes</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-stone-900/80 px-3 py-1 rounded-full border border-stone-800">
+                            <span class="text-[10px] font-dial text-stone-400 uppercase">Œil magique</span>
+                            <div class="magic-eye-wrap"><canvas id="eye-canvas" width="112" height="112" style="width:100%;height:100%"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Cadran -->
+                    <div id="dial-screen" class="dial-glass rounded-2xl relative overflow-hidden border-2 border-amber-900/60 mb-5">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none z-10"></div>
+                        <div id="dial-surface" class="dial-surface" tabindex="0" role="slider" aria-label="Cadran d'accord : faites glisser l'aiguille"
+                             aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="">
+                            <canvas id="dial-canvas"></canvas>
+                            <div id="needle" class="needle"><span id="needle-tag" class="needle-tag"></span></div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-dial text-amber-200/90 px-4 py-2 border-t border-amber-900/40 relative z-20">
+                            <span id="display-band">GAMME : FM</span>
+                            <span id="display-freq" class="digits text-lg text-amber-100">104.3 MHz</span>
+                            <span id="display-sig" class="w-20 text-right">Signal 0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Haut-parleur, bouton d'accord, commandes -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                        <div class="md:col-span-5 speaker-grille rounded-xl h-32 p-3 flex items-center justify-center relative">
+                            <div class="text-center bg-stone-950/85 p-2.5 rounded border border-amber-900/40 w-full flex items-center space-x-3">
+                                <img id="tsf-favicon" class="w-10 h-10 rounded bg-stone-900 object-cover flex-shrink-0" alt="Logo">
+                                <div class="truncate text-left flex-grow">
+                                    <div class="flex justify-between items-center">
+                                        <p id="station-title" class="text-xs text-amber-500 font-dial font-bold truncate">RECEPTION OFF</p>
+                                        <button id="btn-fav" class="text-stone-600 hover:text-red-500 text-xs ml-1" aria-label="Ajouter aux favoris"><i class="fa-solid fa-heart"></i></button>
+                                    </div>
+                                    <p id="station-nowplaying" class="text-[10px] text-amber-300/80 font-dial truncate italic">--</p>
+                                    <p id="station-status" class="text-[9px] text-stone-400 font-dial truncate">Appuyez sur POWER</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-3 flex flex-col items-center gap-2">
+                            <div id="tune-knob" class="tune-knob" tabindex="0" role="slider" aria-label="Bouton d'accord : tournez-le" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                                <div id="knob-face" class="knob-face"><div class="knob-mark"></div></div>
+                            </div>
+                            <span class="text-[10px] font-dial text-stone-400 tracking-widest">ACCORD</span>
+                        </div>
+
+                        <div class="md:col-span-4 flex flex-col gap-2">
+                            <div class="flex items-center justify-between bg-stone-900/60 p-1.5 rounded-lg border border-stone-800">
+                                <span class="text-xs font-dial text-stone-300">POWER / VOL</span>
+                                <div class="flex items-center space-x-2">
+                                    <button id="btn-power" class="w-8 h-8 rounded-full bakelite-knob flex items-center justify-center text-amber-600 hover:text-amber-400 transition" aria-label="Marche / arrêt"><i class="fa-solid fa-power-off text-xs"></i></button>
+                                    <input type="range" id="knob-volume" min="0" max="100" value="80" aria-label="Volume" class="w-20 accent-amber-600 cursor-pointer">
+                                </div>
+                            </div>
+                            <div class="bg-stone-900/60 p-1.5 rounded-lg border border-stone-800">
+                                <div class="piano" id="piano" role="group" aria-label="Gammes d'ondes">
+                                    <button type="button" class="pkey" data-band="GO" aria-pressed="false" title="Grandes ondes (148-283 kHz)">GO</button>
+                                    <button type="button" class="pkey" data-band="OM" aria-pressed="false" title="Ondes moyennes (531-1611 kHz)">PO</button>
+                                    <button type="button" class="pkey" data-band="OC" aria-pressed="false" title="Ondes courtes (5,9-18 MHz)">OC</button>
+                                    <button type="button" class="pkey" data-band="FM" aria-pressed="true" title="Modulation de fréquence (87,5-108 MHz)">FM</button>
+                                </div>
+                            </div>
+                            <button id="btn-caf" class="bg-stone-900/60 hover:bg-stone-800 text-amber-500 p-1.5 rounded-lg border border-stone-800 text-xs font-dial" aria-pressed="true" title="Correction automatique de fréquence : l'aiguille se cale sur la station">
+                                CAF (calage auto) : OUI
+                            </button>
+                            <div id="mems" class="grid grid-cols-6 gap-1"></div>
+                            <p class="text-[9px] font-dial text-stone-500 -mt-1">Mémoires M1-M6 : clic long ou Maj+clic pour enregistrer la station en cours.</p>
+                        </div>
+                    </div>
+                    <p class="mt-3 text-[10px] font-dial text-amber-700/90 leading-relaxed">
+                        Faites glisser l'aiguille rouge sur le cadran, ou tournez le bouton d'accord (cercle avec la souris). Molette ou flèches du clavier pour affiner (Maj = très fin). Les sifflements et le souffle disparaissent quand la station est bien calée.
+                    </p>
+                </div>
+
+                <!-- 2. MODE PLAYER MODERNE -->
+                <div id="mode-modern" class="mode-panel bg-stone-900 border border-stone-800 rounded-3xl p-8 shadow-2xl">
+                    <div class="bg-stone-950 rounded-2xl p-6 text-center border border-amber-900/30 mb-6 flex flex-col items-center">
+                        <img id="m-favicon" class="w-20 h-20 rounded-2xl object-cover mb-4 shadow-lg shadow-amber-600/20 bg-stone-900" alt="Pochette">
+                        <h2 id="m-title" class="text-xl font-bold text-stone-100 font-brand mb-1">Sélectionnez une station</h2>
+                        <p id="m-nowplaying" class="text-xs text-amber-400 font-dial mb-1">--</p>
+                        <p id="m-sub" class="text-[10px] text-stone-400 font-dial">Radio Hybride Web Audio Engine</p>
+                        <canvas id="viz" class="w-full h-20 mt-4 rounded-lg" width="640" height="80" role="img" aria-label="Visualiseur de spectre"></canvas>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="space-y-1">
+                            <label for="m-volume" class="text-xs font-dial text-stone-400">Volume</label>
+                            <input type="range" id="m-volume" min="0" max="100" value="80" class="w-full accent-amber-500">
+                        </div>
+                        <div class="flex justify-center space-x-3 items-center">
+                            <button id="m-fav-btn" class="w-10 h-10 rounded-full bg-stone-800 text-stone-400 hover:text-red-500 flex items-center justify-center border border-stone-700" aria-label="Favori"><i class="fa-solid fa-heart"></i></button>
+                            <button id="m-play-btn" class="w-16 h-16 rounded-full bg-amber-500 text-stone-950 text-xl font-bold flex items-center justify-center hover:scale-105 transition shadow-lg shadow-amber-500/30" aria-label="Lecture / pause"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                        <div class="text-right text-xs font-dial text-amber-500/80"><span id="m-status-tag">Flux : Inactif</span></div>
+                    </div>
+                </div>
+
+                <!-- 3. MODE COMPACT -->
+                <div id="mode-compact" class="mode-panel bg-stone-900 border border-stone-800 rounded-2xl p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex items-center space-x-3 truncate">
+                            <button id="c-power" class="w-10 h-10 rounded-lg bg-amber-600 text-stone-950 flex items-center justify-center flex-shrink-0 font-bold" aria-label="Marche / arrêt"><i class="fa-solid fa-power-off"></i></button>
+                            <div class="truncate">
+                                <h4 id="c-title" class="text-sm font-bold text-amber-500 truncate font-dial">Aucune station</h4>
+                                <p id="c-nowplaying" class="text-[10px] text-amber-300 truncate font-dial">--</p>
+                            </div>
+                        </div>
+                        <div class="w-28 flex-shrink-0"><input type="range" id="c-volume" min="0" max="100" value="80" aria-label="Volume" class="w-full accent-amber-500"></div>
+                    </div>
+                </div>
+
+                <!-- OUTILS ET RÉGLAGES -->
+                <div class="mt-4 bg-stone-900/80 border border-stone-800 rounded-2xl p-4 space-y-4 text-xs font-dial">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-stone-800 pb-3">
+                        <button id="btn-record" class="w-full bg-red-950/60 hover:bg-red-900 text-red-400 border border-red-800 py-1.5 px-2 rounded flex items-center justify-center space-x-2 transition">
+                            <i class="fa-solid fa-circle text-[10px]" id="rec-icon"></i><span id="rec-label">REC (Enregistrer)</span>
+                        </button>
+                        <div class="flex items-center justify-between bg-stone-950 p-1.5 rounded border border-stone-800">
+                            <label for="sleep-select" class="text-stone-400"><i class="fa-solid fa-clock mr-1"></i>Minuteur:</label>
+                            <select id="sleep-select" class="bg-stone-900 text-amber-500 border border-stone-700 rounded px-1 py-0.5 focus:outline-none">
+                                <option value="off">Off</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between bg-stone-950 p-1.5 rounded border border-stone-800">
+                            <label for="dial-color-select" class="text-stone-400"><i class="fa-solid fa-palette mr-1"></i>Cadran:</label>
+                            <select id="dial-color-select" class="bg-stone-900 text-amber-500 border border-stone-700 rounded px-1 py-0.5 focus:outline-none">
+                                <option value="amber">Ambre Vintage</option><option value="green">Vert Oeil Lampes</option><option value="blue">Bleu Nuit</option><option value="red">Rouge Rubis</option><option value="violet">Violet Améthyste</option><option value="ice">Blanc Glacé</option><option value="pink">Rose Néon</option><option value="cyan">Cyan Rétro</option><option value="auto">Selon la gamme</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-stone-800 pb-3">
+                        <div class="flex items-center justify-between bg-stone-950 p-1.5 rounded border border-stone-800"><label for="theme-select" class="text-stone-400"><i class="fa-solid fa-swatchbook mr-1"></i>Thème:</label><select id="theme-select" class="bg-stone-900 text-amber-500 border border-stone-700 rounded px-1 py-0.5 focus:outline-none"></select></div>
+                        <div class="flex items-center justify-between bg-stone-950 p-1.5 rounded border border-stone-800"><label for="alarm-time" class="text-stone-400"><i class="fa-solid fa-bell mr-1"></i>Réveil:</label><span class="flex items-center gap-1"><input type="time" id="alarm-time" class="bg-stone-900 text-amber-500 border border-stone-700 rounded px-1 py-0.5 w-24"><button type="button" id="alarm-btn" class="px-2 py-0.5 rounded border border-stone-700 bg-stone-900 text-amber-500" aria-pressed="false">OFF</button></span></div>
+                        <details class="bg-stone-950 p-1.5 rounded border border-stone-800"><summary class="text-stone-400 cursor-pointer"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Historique</summary><div id="hist" class="mt-2 space-y-1 max-h-28 overflow-y-auto text-stone-300"></div></details>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                        <div><label for="eq-hiss" class="text-stone-400 block mb-1">Souffle</label><input type="range" id="eq-hiss" min="0" max="100" value="60" class="w-full accent-amber-600"></div>
+                        <div><label for="eq-crackle" class="text-stone-400 block mb-1">Grésillement</label><input type="range" id="eq-crackle" min="0" max="100" value="0" class="w-full accent-amber-600"></div>
+                        <div><label for="eq-hum" class="text-stone-400 block mb-1">Ronflement 50Hz</label><input type="range" id="eq-hum" min="0" max="100" value="0" class="w-full accent-amber-600"></div>
+                        <div><label for="eq-bass" class="text-stone-400 block mb-1">Basses</label><input type="range" id="eq-bass" min="-10" max="10" value="0" class="w-full accent-amber-600"></div>
+                        <div><label for="eq-treble" class="text-stone-400 block mb-1">Aigus</label><input type="range" id="eq-treble" min="-10" max="10" value="0" class="w-full accent-amber-600"></div>
+                        <div class="col-span-2 sm:col-span-1 flex items-end"><button id="btn-lamp-filter" class="w-full bg-stone-800 hover:bg-stone-700 text-amber-500 py-1 px-2 rounded border border-stone-700 transition text-[11px] font-bold">Lampes : ON</button></div>
+                    </div>
+                    <p id="fx-note" class="text-[10px] text-stone-500 hidden">Ce flux n'autorise pas le traitement du son par le navigateur : basses, aigus, lampes et enregistrement sont indisponibles, le souffle et les sifflements restent actifs.</p>
+                </div>
+            </div>
+
+            <!-- PANNEAU STATIONS -->
+            <div class="lg:col-span-4 w-full space-y-4">
+                <div class="bg-stone-900 border border-stone-800 rounded-2xl p-4 font-dial">
+                    <div class="flex border-b border-stone-800 pb-2 mb-3 justify-between items-center text-xs">
+                        <div class="flex space-x-3" role="tablist">
+                            <button id="tab-btn-dial" role="tab" class="font-bold">Cadran</button>
+                            <button id="tab-btn-api" role="tab" class="font-bold">Mondial</button>
+                            <button id="tab-btn-fav" role="tab" class="font-bold">Favoris (<span id="fav-count">0</span>)</button>
+                        </div>
+                        <span id="api-status" class="text-[10px] text-stone-500">Prêt</span>
+                    </div>
+
+                    <div id="tab-view-dial"><div id="preset-list" class="space-y-1.5 text-xs max-h-96 overflow-y-auto pr-1"></div></div>
+
+                    <div id="tab-view-api" class="hidden">
+                        <div class="relative mb-3">
+                            <label for="search-input" class="sr-only">Rechercher une radio</label>
+                            <input type="text" id="search-input" placeholder="Radio, pays, genre (ex: Jazz, FR)..." class="w-full bg-stone-950 border border-stone-800 rounded-lg py-1.5 px-3 pl-8 text-xs text-stone-200 focus:outline-none focus:border-amber-600">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-stone-500 text-xs"></i>
+                        </div>
+                        <div id="quick-chips" class="flex gap-1.5 mb-3 text-[10px] flex-wrap"></div>
+                        <div id="station-list" class="space-y-1.5 text-xs max-h-80 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div id="tab-view-fav" class="hidden"><div id="fav-list" class="space-y-1.5 text-xs max-h-96 overflow-y-auto pr-1"></div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-stone-900 border-t border-stone-800 py-2 px-4 text-xs font-dial text-stone-500 flex justify-between items-center gap-3">
+        <span>T.S.F. Hybrid v9.0 · P marche/arrêt · 1-6 mémoires · N/B station · T thème · F favori · +/- volume</span>
+        <span id="status-footer" role="status" aria-live="polite" class="truncate">Prêt</span>
+    </footer>
+
+<script>
+(() => {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const SECURE = location.protocol === 'https:';
+
+/* ============================================================
+   1. DONNÉES : GAMMES D'ONDES ET STATIONS
+   ============================================================ */
+const BANDS = {
+    FM: { label: 'FM', unit: 'MHz', min: 87.5, max: 108, major: 2,   minor: 0.5, dec: 1, step: 0.1,  fine: 0.02,  cut: 4500, noise: 0.6 },
+    OM: { label: 'PO', unit: 'kHz', min: 531,  max: 1611, major: 100, minor: 25,  dec: 0, step: 9,    fine: 1,     cut: 3500, noise: 1.0 },
+    GO: { label: 'GO', unit: 'kHz', min: 148,  max: 283,  major: 20,  minor: 5,   dec: 0, step: 1,    fine: 0.25,  cut: 3000, noise: 1.2 },
+    OC: { label: 'OC', unit: 'MHz', min: 5.9,  max: 18,   major: 2,   minor: 0.5, dec: 2, step: 0.05, fine: 0.01,  cut: 2800, noise: 1.4 }
+};
+const BAND_ORDER = ['FM', 'OM', 'GO', 'OC'];
+
+const RF = (slug) => [`https://icecast.radiofrance.fr/${slug}-midfi.mp3`, `https://icecast.radiofrance.fr/${slug}-hifi.aac`];
+const RTL_URLS = ['https://streaming.radio.rtl.fr/rtl-1-44-128', 'https://streaming.radio.rtl.fr/rtl-1-44-64'];
+const BBCWS = ['https://stream.live.vc.bbcmedia.co.uk/bbc_world_service'];
+
+// FM : fréquences parisiennes. q = nom cherché dans Radio-Browser si les adresses connues échouent.
+const PRESETS = [
+    { id: 'franceinter',    name: 'France Inter',      short: 'FR INTER',  band: 'FM', f: 87.8,  urls: RF('franceinter'),  q: 'france inter',    rx: /^france ?inter$/, cc: 'FR' },
+    { id: 'tsfjazz',        name: 'TSF Jazz',          short: 'TSF JAZZ',  band: 'FM', f: 89.9,  urls: ['https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3', 'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.aac'], q: 'tsf jazz', rx: /^tsf ?jazz/, cc: 'FR' },
+    { id: 'nostalgie',      name: 'Nostalgie',         short: 'NOSTALGIE', band: 'FM', f: 90.4,  urls: ['https://scdn.nrjaudio.fm/adwz1/fr/30601/mp3_128.mp3'], q: 'nostalgie', rx: /^nostalgie( france)?$/, cc: 'FR' },
+    { id: 'francemusique',  name: 'France Musique',    short: 'FR MUSIQUE',band: 'FM', f: 91.7,  urls: RF('francemusique'), q: 'france musique', rx: /^france ?musique$/, cc: 'FR' },
+    { id: 'mouv',           name: "Mouv'",             short: 'MOUV',      band: 'FM', f: 92.1,  urls: RF('mouv'),         q: 'mouv', rx: /^mouv/, cc: 'FR' },
+    { id: 'franceculture',  name: 'France Culture',    short: 'FR CULTURE',band: 'FM', f: 93.5,  urls: RF('franceculture'),q: 'france culture', rx: /^france ?culture$/, cc: 'FR' },
+    { id: 'skyrock',        name: 'Skyrock',           short: 'SKYROCK',   band: 'FM', f: 96.0,  urls: ['https://icecast.skyrock.net/s/natio_mp3_128k'], q: 'skyrock', rx: /^skyrock$/, cc: 'FR' },
+    { id: 'nrj',            name: 'NRJ',               short: 'NRJ',       band: 'FM', f: 100.3, urls: ['https://scdn.nrjaudio.fm/adwz1/fr/30001/mp3_128.mp3'], q: 'nrj', rx: /^nrj( france)?$/, cc: 'FR' },
+    { id: 'radioclassique', name: 'Radio Classique',   short: 'CLASSIQUE', band: 'FM', f: 101.1, urls: ['https://radioclassique.ice.infomaniak.ch/radioclassique-high.mp3'], q: 'radio classique', rx: /^radio ?classique/, cc: 'FR' },
+    { id: 'funradio',       name: 'Fun Radio',         short: 'FUN',       band: 'FM', f: 101.9, urls: ['https://streaming.radio.funradio.fr/fun-1-44-128'], q: 'fun radio', rx: /^fun ?radio/, cc: 'FR' },
+    { id: 'rmc',            name: 'RMC',               short: 'RMC',       band: 'FM', f: 103.1, urls: [], q: 'rmc', rx: /^rmc( info| talk| france)?$/, cc: 'FR' },
+    { id: 'virgin',         name: 'Virgin Radio',      short: 'VIRGIN',    band: 'FM', f: 103.5, urls: [], q: 'virgin radio', rx: /^virgin radio( france)?$/, cc: 'FR' },
+    { id: 'rtl',            name: 'RTL',               short: 'RTL',       band: 'FM', f: 104.3, urls: RTL_URLS, q: 'rtl', rx: /^rtl( france)?$/, cc: 'FR' },
+    { id: 'europe1',        name: 'Europe 1',          short: 'EUROPE 1',  band: 'FM', f: 104.7, urls: [], q: 'europe 1', rx: /^europe ?1/, cc: 'FR' },
+    { id: 'fip',            name: 'FIP',               short: 'FIP',       band: 'FM', f: 105.1, urls: RF('fip'),          q: 'fip', rx: /^fip$/, cc: 'FR' },
+    { id: 'franceinfo',     name: 'franceinfo',        short: 'FRANCEINFO',band: 'FM', f: 105.5, urls: RF('franceinfo'),   q: 'franceinfo', rx: /^france ?info( |$)/, cc: 'FR' },
+    { id: 'rtl2',           name: 'RTL 2',             short: 'RTL 2',     band: 'FM', f: 105.7, urls: ['https://streaming.radio.rtl2.fr/rtl2-1-44-128'], q: 'rtl 2', rx: /^rtl ?2$/, cc: 'FR' },
+
+    { id: 'bbcws-om',       name: 'BBC World Service', short: 'BBC WS',    band: 'OM', f: 648,   urls: BBCWS, q: 'bbc world service', rx: /^bbc world service/, cc: 'GB' },
+    { id: 'rmc-om',         name: 'Radio Monte-Carlo', short: 'MONTE-CARLO',band: 'OM', f: 1467,  urls: [], q: 'rmc', rx: /^rmc( info| talk| france)?$/, cc: 'FR' },
+    { id: 'rts-om',         name: 'RTS Option Musique',short: 'RTS OPTION',band: 'OM', f: 1170,  urls: ['https://stream.srg-ssr.ch/m/option-musique/mp3_128'], q: 'option musique', rx: /option musique/, cc: 'CH' },
+
+    { id: 'europe1-go',     name: 'Europe 1',          short: 'EUROPE 1',  band: 'GO', f: 183,   urls: [], q: 'europe 1', rx: /^europe ?1/, cc: 'FR' },
+    { id: 'bbc4-go',        name: 'BBC Radio 4',       short: 'BBC R4',    band: 'GO', f: 198,   urls: ['https://stream.live.vc.bbcmedia.co.uk/bbc_radio_fourlw'], q: 'bbc radio 4', rx: /^bbc radio 4/, cc: 'GB' },
+    { id: 'rtl-go',         name: 'RTL',               short: 'RTL',       band: 'GO', f: 234,   urls: RTL_URLS, q: 'rtl', rx: /^rtl( france)?$/, cc: 'FR' },
+
+    { id: 'swissclassic-oc',name: 'Swiss Classic',     short: 'SWISS CL.', band: 'OC', f: 6.165, urls: ['https://stream.srg-ssr.ch/m/rsc_fr/mp3_128'], q: 'swiss classic', rx: /swiss classic/, cc: 'CH' },
+    { id: 'bbcws-oc',       name: 'BBC World Service', short: 'BBC WS',    band: 'OC', f: 9.41,  urls: BBCWS, q: 'bbc world service', rx: /^bbc world service/, cc: 'GB' },
+    { id: 'rfi-oc',         name: 'RFI Monde',         short: 'RFI',       band: 'OC', f: 15.3,  urls: ['https://rfimonde64k.ice.infomaniak.ch/rfimonde-64.mp3'], q: 'rfi monde', rx: /^rfi( monde)?$/, cc: 'FR' }
+];
+PRESETS.forEach((s) => { const b = BANDS[s.band]; s.p = (s.f - b.min) / (b.max - b.min); });
+const presetById = (id) => PRESETS.find((s) => s.id === id);
+
+const GENERIC_ICON = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="#2a1d14"/><path d="M14 26h36v22H14zM22 26l26-12" stroke="#f59e0b" stroke-width="3" fill="none"/><circle cx="26" cy="37" r="6" fill="none" stroke="#f59e0b" stroke-width="3"/><path d="M38 33h8M38 38h8M38 43h8" stroke="#f59e0b" stroke-width="3"/></svg>');
+function badge(text) {
+    const hue = Array.from(text).reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+    const t = text.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase();
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="hsl(${hue},45%,22%)"/><text x="32" y="40" font-family="Georgia,serif" font-size="22" font-weight="700" text-anchor="middle" fill="hsl(${hue},80%,75%)">${t}</text></svg>`);
+}
+const iconOf = (st) => (st && st.favicon) || (st ? badge(st.name) : GENERIC_ICON);
+const fmtFreq = (st) => { const b = BANDS[st.band]; return `${st.f.toFixed(b.dec)} ${b.unit}`; };
+
+/* ============================================================
+   2. ÉTAT PERSISTANT
+   ============================================================ */
+const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let favorites = store.get('tsf_favorites', []);
+if (!Array.isArray(favorites)) favorites = [];
+const saved = store.get('tsf_state_v2', {});
+const startPos = Object.assign({ FM: (104.3 - 87.5) / 20.5, OM: 0.4, GO: 0.37, OC: 0.29 }, saved.pos || {});
+let persistTimer = null;
+function persist() {
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => {
+        const pos = Object.assign({}, D.pos); pos[D.band] = D.t;
+        store.set('tsf_state_v2', { band: D.band, pos, vol: radio.vol, hiss: radio.hiss, lamp: radio.lamp, color: D.color, caf: D.caf });
+    }, 300);
+}
+
+/* ============================================================
+   3. RADIO-BROWSER (annuaire mondial) avec plusieurs serveurs
+   ============================================================ */
+const RB = { hosts: ['de1.api.radio-browser.info', 'de2.api.radio-browser.info', 'fr1.api.radio-browser.info', 'nl1.api.radio-browser.info', 'at1.api.radio-browser.info'], idx: 0 };
+async function rbFetch(path) {
+    for (let i = 0; i < RB.hosts.length; i++) {
+        const h = RB.hosts[(RB.idx + i) % RB.hosts.length];
+        const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 6000);
+        try {
+            const r = await fetch(`https://${h}${path}`, { signal: ctl.signal });
+            clearTimeout(timer);
+            if (!r.ok) throw new Error('http');
+            const j = await r.json();
+            RB.idx = (RB.idx + i) % RB.hosts.length;
+            return j;
+        } catch (e) { clearTimeout(timer); }
+    }
+    throw new Error('Annuaire injoignable');
+}
+const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const okUrl = (u) => !!u && (!SECURE || u.startsWith('https://'));
+
+// Cherche d'autres adresses de flux quand celles connues échouent
+async function resolveByName(st) {
+    if (!st.q) return [];
+    try {
+        const list = await rbFetch(`/json/stations/search?name=${encodeURIComponent(st.q)}&countrycode=${st.cc || 'FR'}&hidebroken=true&order=clickcount&reverse=true&limit=20`);
+        let hit = list.filter((s) => st.rx && st.rx.test(norm(s.name)));
+        if (!hit.length) hit = list.filter((s) => norm(s.name).startsWith(norm(st.q)));
+        const out = [];
+        hit.forEach((s) => { [s.url_resolved, s.url].forEach((u) => { if (okUrl(u) && out.indexOf(u) < 0) out.push(u); }); });
+        return out.slice(0, 5);
+    } catch (e) { return []; }
+}
+
+/* ============================================================
+   4. MOTEUR AUDIO
+   ============================================================ */
+const radio = {
+    ctx: null, power: false, vol: saved.vol !== undefined ? saved.vol : 0.8, hiss: saved.hiss !== undefined ? saved.hiss : 0.6, lamp: saved.lamp !== false,
+    el: null, src: null, mode: null, active: null, connecting: null, token: 0, direct: false, failed: {}, isRecording: false,
+
+    init() {
+        if (this.ctx) return;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const c = this.ctx = new AC();
+        this.master = c.createGain(); this.master.gain.value = this.vol;
+        this.bass = c.createBiquadFilter(); this.bass.type = 'lowshelf'; this.bass.frequency.value = 250;
+        this.treble = c.createBiquadFilter(); this.treble.type = 'highshelf'; this.treble.frequency.value = 4000;
+        this.lampF = c.createBiquadFilter(); this.lampF.type = 'lowpass'; this.lampF.frequency.value = 20000;
+        this.streamGain = c.createGain(); this.streamGain.gain.value = 0;
+        this.midF = c.createBiquadFilter(); this.midF.type = 'peaking'; this.midF.frequency.value = 1100; this.midF.Q.value = 0.9; this.midF.gain.value = 0;
+        this.bass.connect(this.treble); this.treble.connect(this.midF); this.midF.connect(this.lampF); this.lampF.connect(this.streamGain); this.streamGain.connect(this.master);
+        this.master.connect(c.destination);
+        this.an = c.createAnalyser(); this.an.fftSize = 128; this.master.connect(this.an);
+        this.dest = c.createMediaStreamDestination(); this.master.connect(this.dest);
+
+        const len = c.sampleRate * 3, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        const mkNoise = () => { const s = c.createBufferSource(); s.buffer = buf; s.loop = true; return s; };
+
+        // souffle entre les stations
+        this.noiseF = c.createBiquadFilter(); this.noiseF.type = 'lowpass'; this.noiseF.frequency.value = 5500;
+        this.noiseGain = c.createGain(); this.noiseGain.gain.value = 0;
+        const n1 = mkNoise(); n1.connect(this.noiseF); this.noiseF.connect(this.noiseGain); this.noiseGain.connect(this.master); n1.start();
+
+        // grésillement (impulsions)
+        const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2200;
+        this.crackGain = c.createGain(); this.crackGain.gain.value = 0; this.crackAmt = 0;
+        const n2 = mkNoise(); n2.connect(hp); hp.connect(this.crackGain); this.crackGain.connect(this.master); n2.start();
+        setInterval(() => {
+            if (!this.power || this.crackAmt <= 0) { this.crackGain.gain.setTargetAtTime(0, c.currentTime, 0.01); return; }
+            const burst = Math.random() < 0.25 + this.crackAmt * 0.5;
+            this.crackGain.gain.setTargetAtTime(burst ? this.crackAmt * 0.18 * Math.random() : 0, c.currentTime, 0.004);
+        }, 70);
+
+        // ronflement 50 Hz
+        this.humGain = c.createGain(); this.humGain.gain.value = 0;
+        const h1 = c.createOscillator(); h1.frequency.value = 50; const h2 = c.createOscillator(); h2.frequency.value = 100;
+        const g2 = c.createGain(); g2.gain.value = 0.4; h1.connect(this.humGain); h2.connect(g2); g2.connect(this.humGain); this.humGain.connect(this.master); h1.start(); h2.start();
+
+        // sifflement d'accord (battement)
+        this.whOsc = c.createOscillator(); this.whOsc.type = 'sine'; this.whOsc.frequency.value = 800;
+        this.whGain = c.createGain(); this.whGain.gain.value = 0;
+        this.whOsc.connect(this.whGain); this.whGain.connect(this.master); this.whOsc.start();
+
+        this.setBass(+$('eq-bass').value); this.setTreble(+$('eq-treble').value);
+        this.applyTone();
+    },
+
+    resume() { this.init(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+
+    powerOn() { this.resume(); if (!this.power) { this.power = true; this.thunk(); } },
+    powerOff() {
+        if (!this.power) return;
+        if (this.isRecording) this.toggleRecord();
+        this.power = false; this.token++; this.stopStream(); this.active = null; this.connecting = null; this.direct = false;
+        if (this.ctx) {
+            const t = this.ctx.currentTime;
+            [this.noiseGain, this.whGain, this.crackGain, this.humGain, this.streamGain].forEach((g) => g.gain.setTargetAtTime(0, t, 0.08));
+        }
+        this.thunk();
+    },
+    togglePower() { if (this.power) this.powerOff(); else { this.powerOn(); } ui.refresh(); },
+
+    thunk(freq) {   // petit bruit mécanique (touche de piano, interrupteur)
+        if (!this.ctx) return;
+        const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+        o.type = 'triangle'; o.frequency.setValueAtTime(freq || 180, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.09);
+        g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.12);
+    },
+
+    stopStream() {
+        if (this.el) { try { this.el.pause(); this.el.removeAttribute('src'); this.el.load(); } catch (e) {} }
+        if (this.src) { try { this.src.disconnect(); } catch (e) {} }
+        this.el = null; this.src = null; this.mode = null;
+        $('fx-note').classList.add('hidden');
+    },
+    release() { this.token++; this.stopStream(); this.active = null; this.connecting = null; ui.setStatus('Hors station : tournez le bouton'); ui.refresh(); },
+
+    // Essaie une adresse : d'abord avec traitement du son (CORS), puis en lecture directe
+    attempt(url, mode, token) {
+        return new Promise((resolve) => {
+            const el = new Audio(); el.preload = 'none';
+            if (mode === 'cors') el.crossOrigin = 'anonymous';
+            el.volume = 0;
+            let node = null, done = false, timer = 0;
+            const cleanup = () => { try { el.pause(); el.removeAttribute('src'); el.load(); } catch (e) {} try { node && node.disconnect(); } catch (e) {} };
+            const finish = (r) => {
+                if (done) return; done = true; clearTimeout(timer);
+                el.removeEventListener('playing', onPlay); el.removeEventListener('error', onErr);
+                if (token !== this.token) { cleanup(); resolve('cancel'); return; }
+                if (r === 'ok') { this.adopt(el, node, mode); resolve('ok'); } else { cleanup(); resolve(r); }
+            };
+            const onPlay = () => finish('ok'), onErr = () => finish('error');
+            el.addEventListener('playing', onPlay); el.addEventListener('error', onErr);
+            timer = setTimeout(() => finish('timeout'), 9000);
+            try {
+                if (mode === 'cors') { this.init(); node = this.ctx.createMediaElementSource(el); node.connect(this.bass); el.volume = 1; }
+                el.src = url;
+                const p = el.play(); if (p && p.catch) p.catch(() => finish('error'));
+            } catch (e) { finish('error'); }
+        });
+    },
+    adopt(el, node, mode) {
+        this.stopStream();
+        this.el = el; this.src = node; this.mode = mode;
+        el.addEventListener('error', () => { if (el === this.el) { ui.setStatus('Flux interrompu'); this.stopStream(); this.active = null; ui.refresh(); } });
+        el.addEventListener('waiting', () => { if (el === this.el) ui.setStatus('Mise en mémoire tampon...'); });
+        el.addEventListener('playing', () => { if (el === this.el && this.active) ui.setStatus('En direct'); });
+        $('fx-note').classList.toggle('hidden', mode === 'cors');
+        this.applyTone();
+    },
+
+    async connect(st) {
+        const token = ++this.token;
+        this.stopStream();
+        this.active = st; this.connecting = st;
+        const cands = [];
+        (st.urls || []).concat([st.url_resolved, st.url]).forEach((u) => { if (okUrl(u) && cands.indexOf(u) < 0) cands.push(u); });
+        ui.setStatus(`Connexion à ${st.name}...`); ui.refresh();
+        let ok = false, tried = 0;
+        const run = async (list) => {
+            for (const u of list) {
+                if (token !== this.token) return false;
+                tried++; if (tried > 1) ui.setStatus(`Essai ${tried} pour ${st.name}...`);
+                for (const mode of ['cors', 'plain']) {
+                    const r = await this.attempt(u, mode, token);
+                    if (r === 'ok') return true;
+                    if (r === 'cancel') return false;
+                    if (r === 'timeout') break;
+                }
+            }
+            return false;
+        };
+        ok = await run(cands);
+        if (!ok && token === this.token && st.q) {
+            ui.setStatus(`Recherche d'un autre flux pour ${st.name}...`);
+            const more = (await resolveByName(st)).filter((u) => cands.indexOf(u) < 0);
+            ok = await run(more);
+        }
+        if (token !== this.token) return;
+        this.connecting = null;
+        if (ok) { ui.setStatus('En direct'); ui.toast(`En direct : ${st.name}`); }
+        else { this.failed[st.id || st.name] = performance.now(); this.active = null; ui.setStatus(`Flux indisponible : ${st.name}`); ui.toast(`Flux indisponible : ${st.name}`); }
+        ui.refresh();
+    },
+
+    /* Niveaux sonores, appelés à chaque image. q = qualité de réception de la station chargée (0-1). */
+    applyLevels(q, nearDpx, band, nearQ) {
+        if (!this.ctx) return;
+        const c = this.ctx, t = c.currentTime, B = BANDS[band];
+        const live = this.power && this.el;
+        const level = this.direct ? 1 : q;
+        let fade = 1;
+        if (band === 'OC') fade = 1 - 0.28 * (0.5 + 0.5 * Math.sin(performance.now() / 1300));   // évanouissements des ondes courtes
+        const s = live ? level * level * (3 - 2 * level) * fade : 0;
+        if (this.mode === 'cors') this.streamGain.gain.setTargetAtTime(s, t, 0.04);
+        else if (this.el) this.el.volume = clamp(this.vol * s, 0, 1);
+        const hiss = this.power ? (this.direct ? 0 : (1 - (live ? s : 0))) * this.hiss * B.noise : 0;
+        this.noiseGain.gain.setTargetAtTime(hiss * 0.2, t, 0.03);
+        // sifflement : le battement descend vers zéro à mesure que l'on se cale
+        let wh = 0;
+        if (this.power && !this.direct && nearDpx < 26 && nearDpx > 2.2) {
+            const k = (nearDpx - 2.2) / 24;
+            this.whOsc.frequency.setTargetAtTime(90 + k * 1500, t, 0.02);
+            wh = 0.035 * (1 - nearQ * nearQ) * Math.min(1, (26 - nearDpx) / 6);
+        }
+        this.whGain.gain.setTargetAtTime(wh * this.hiss, t, 0.03);
+        this.humGain.gain.setTargetAtTime(this.power ? (this.humAmt || 0) * 0.05 : 0, t, 0.05);
+    },
+    applyTone() {
+        if (!this.ctx) return;
+        const B = BANDS[D.band];
+        this.lampF.frequency.setTargetAtTime(this.lamp ? B.cut : 20000, this.ctx.currentTime, 0.05);
+        this.midF.gain.setTargetAtTime(this.lamp ? 5 : 0, this.ctx.currentTime, 0.05);
+    },
+    setVolume(v) { this.vol = v; if (this.master) this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05); if (this.mode === 'plain' && this.el) this.el.volume = clamp(v, 0, 1); },
+    setBass(v) { if (this.bass) this.bass.gain.value = v; },
+    setTreble(v) { if (this.treble) this.treble.gain.value = v; },
+    setCrackle(v) { this.crackAmt = v / 100; },
+    setHum(v) { this.humAmt = v / 100; },
+
+    toggleRecord() {
+        if (!this.power || this.mode !== 'cors') { ui.toast("Enregistrement possible seulement quand la radio joue un flux qui autorise le traitement du son."); return; }
+        if (!this.isRecording) {
+            this.chunks = [];
+            this.rec = new MediaRecorder(this.dest.stream);
+            this.rec.ondataavailable = (e) => { if (e.data.size) this.chunks.push(e.data); };
+            this.rec.onstop = () => {
+                const url = URL.createObjectURL(new Blob(this.chunks, { type: 'audio/webm' }));
+                const a = document.createElement('a'); a.href = url; a.download = `TSF_Radio_${Date.now()}.webm`; a.click();
+            };
+            this.rec.start(); this.isRecording = true;
+            $('rec-icon').classList.add('animate-pulse', 'text-red-500'); $('rec-label').textContent = 'STOP & Sauvegarder';
+        } else {
+            this.rec.stop(); this.isRecording = false;
+            $('rec-icon').classList.remove('animate-pulse', 'text-red-500'); $('rec-label').textContent = 'REC (Enregistrer)';
+        }
+    }
+};
+
+/* ============================================================
+   5. CADRAN, AIGUILLE ET BOUTON D'ACCORD
+   ============================================================ */
+const DIALS = {
+    amber: ['Ambre Vintage', '#ffd9a0', '#8a4210', '#3f1a06', '245,158,11'],
+    green: ['Vert Oeil Lampes', '#c2f7d6', '#0b6b4f', '#043b2d', '16,185,129'],
+    blue: ['Bleu Nuit', '#cfe0ff', '#2347a8', '#172554', '59,130,246'],
+    red: ['Rouge Rubis', '#ffd0cc', '#a31d1d', '#450a0a', '239,68,68'],
+    violet: ['Violet Améthyste', '#e9d5ff', '#6b21a8', '#2e1065', '168,85,247'],
+    ice: ['Blanc Glacé', '#f0f9ff', '#5b8aa8', '#1e3a4f', '125,211,252'],
+    pink: ['Rose Néon', '#ffd1ec', '#be185d', '#500724', '244,114,182'],
+    cyan: ['Cyan Rétro', '#c8fbff', '#0e7490', '#083344', '34,211,238'],
+    auto: ['Selon la gamme', '#ffd9a0', '', '', '']
+};
+const INK = {}; Object.keys(DIALS).forEach((k) => { INK[k] = DIALS[k][1]; });
+const BANDCOL = { FM: 'amber', OM: 'green', GO: 'blue', OC: 'red' };
+const dc = () => (D.color === 'auto' ? BANDCOL[D.band] : D.color);
+const LOCK_PX = 4, FADE_PX = 22, TURNS = 3;
+const D = {
+    band: BANDS[saved.band] ? saved.band : 'FM', pos: startPos, t: 0, c: 0, w: 700, pad: 16,
+    color: INK[saved.color] ? saved.color : 'amber', caf: saved.caf !== false,
+    dragging: false, dwell: 0, away: 0, eye: 0, lastSig: -1, afterTimer: null
+};
+D.t = D.c = D.pos[D.band];
+const Bd = () => BANDS[D.band];
+const freqOf = (p) => Bd().min + p * (Bd().max - Bd().min);
+const dialSpan = () => Math.max(50, D.w - 2 * D.pad);
+const stationsOfBand = () => PRESETS.filter((s) => s.band === D.band);
+
+const dialCv = $('dial-canvas'), eyeCv = $('eye-canvas'), needle = $('needle'), tag = $('needle-tag'), surface = $('dial-surface'), knob = $('tune-knob'), knobFace = $('knob-face');
+
+function drawDial() {
+    const w = D.w, h = 175, dpr = window.devicePixelRatio || 1, B = Bd(), ink = INK[dc()];
+    dialCv.width = Math.round(w * dpr); dialCv.height = Math.round(h * dpr);
+    const g = dialCv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    const xOf = (f) => D.pad + (f - B.min) / (B.max - B.min) * (w - 2 * D.pad);
+    const base = 120;
+    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = 1; g.textAlign = 'center';
+    g.font = '11px "Courier Prime", monospace'; g.shadowColor = ink; g.shadowBlur = 3;
+    g.globalAlpha = 0.6; g.beginPath(); g.moveTo(D.pad - 8, base + 0.5); g.lineTo(w - D.pad + 8, base + 0.5); g.stroke();
+
+    const pxMajor = (w - 2 * D.pad) * B.major / (B.max - B.min), skip = pxMajor < 34 ? 2 : 1;
+    const i0 = Math.ceil(B.min / B.minor - 1e-9), i1 = Math.floor(B.max / B.minor + 1e-9);
+    for (let i = i0; i <= i1; i++) {
+        const v = i * B.minor, r = v / B.major, major = Math.abs(r - Math.round(r)) < 1e-6, px = Math.round(xOf(v)) + 0.5;
+        g.globalAlpha = major ? 0.95 : 0.5;
+        g.beginPath(); g.moveTo(px, base); g.lineTo(px, base + (major ? 16 : 8)); g.stroke();
+        if (major && Math.round(r) % skip === 0) { g.globalAlpha = 0.95; g.textBaseline = 'top'; g.fillText(String(Math.round(v)), px, base + 20); }
+    }
+    // noms des stations, écrits à la verticale
+    g.globalAlpha = 0.9; g.font = '10px "Courier Prime", monospace';
+    let lastX = -99;
+    stationsOfBand().sort((a, b) => a.f - b.f).forEach((s) => {
+        const px = xOf(s.f);
+        g.beginPath(); g.moveTo(px - 3, base - 4); g.lineTo(px + 3, base - 4); g.lineTo(px, base - 1); g.closePath(); g.fill();
+        if (px - lastX >= 11) {
+            lastX = px; g.save(); g.translate(px, base - 10); g.rotate(-Math.PI / 2); g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(s.short, 0, 0); g.restore();
+        }
+    });
+    g.globalAlpha = 0.65; g.textAlign = 'right'; g.textBaseline = 'top'; g.font = '700 12px "Courier Prime", monospace';
+    g.fillText(`${B.label}  ·  ${B.unit}`, w - D.pad, 152);
+    g.shadowBlur = 0; g.globalAlpha = 1;
+}
+
+function resizeDial() {
+    const w = Math.round(surface.getBoundingClientRect().width);
+    if (w > 50 && w !== D.w) D.w = w;
+    drawDial();
+}
+if (window.ResizeObserver) new ResizeObserver(resizeDial).observe(surface);
+window.addEventListener('resize', resizeDial);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawDial);
+
+// --- Déplacer l'aiguille ---
+function leaveDirect() {
+    if (radio.direct) { radio.direct = false; radio.release(); }
+}
+function setTarget(p, fromUser) {
+    if (fromUser) leaveDirect();
+    D.t = clamp(p, 0, 1);
+    persist();
+}
+function xToP(clientX) {
+    const r = surface.getBoundingClientRect();
+    return (clientX - r.left - D.pad) / (r.width - 2 * D.pad);
+}
+function stepP(dir, mode) {   // mode : 'step' | 'fine' | 'coarse'
+    const B = Bd(), amount = mode === 'fine' ? B.fine : mode === 'coarse' ? B.step * 10 : B.step;
+    setTarget(D.t + dir * amount / (B.max - B.min), true);
+}
+// CAF : l'aiguille se cale sur la station la plus proche
+function afterTuning() {
+    if (!D.caf || D.dragging) return;
+    const n = nearest(D.t);
+    if (n && n.dpx <= 9 && n.dpx > 0.3) D.t = n.st.p;
+}
+
+surface.addEventListener('pointerdown', (e) => {
+    surface.setPointerCapture(e.pointerId); D.dragging = true;
+    setTarget(xToP(e.clientX), true); surface.focus({ preventScroll: true });
+});
+surface.addEventListener('pointermove', (e) => { if (D.dragging) setTarget(xToP(e.clientX), true); });
+['pointerup', 'pointercancel'].forEach((ev) => surface.addEventListener(ev, () => { if (D.dragging) { D.dragging = false; afterTuning(); } }));
+function onWheel(e) { e.preventDefault(); stepP(e.deltaY < 0 ? 1 : -1, e.shiftKey ? 'fine' : 'step'); }
+surface.addEventListener('wheel', onWheel, { passive: false });
+knob.addEventListener('wheel', onWheel, { passive: false });
+function onKey(e) {
+    const map = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 };
+    if (map[e.key]) { e.preventDefault(); stepP(map[e.key], e.shiftKey ? 'fine' : 'step'); }
+    else if (e.key === 'PageUp') { e.preventDefault(); stepP(1, 'coarse'); }
+    else if (e.key === 'PageDown') { e.preventDefault(); stepP(-1, 'coarse'); }
+    else if (e.key === 'Home') { e.preventDefault(); setTarget(0, true); }
+    else if (e.key === 'End') { e.preventDefault(); setTarget(1, true); }
+}
+surface.addEventListener('keydown', onKey);
+knob.addEventListener('keydown', onKey);
+
+// --- Bouton d'accord : on le tourne en cercle ---
+let kn = null;
+knob.addEventListener('pointerdown', (e) => {
+    knob.setPointerCapture(e.pointerId);
+    const r = knob.getBoundingClientRect();
+    kn = { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+    kn.last = Math.atan2(e.clientY - kn.cy, e.clientX - kn.cx);
+    D.dragging = true; knob.focus({ preventScroll: true });
+});
+knob.addEventListener('pointermove', (e) => {
+    if (!kn) return;
+    const a = Math.atan2(e.clientY - kn.cy, e.clientX - kn.cx);
+    let d = a - kn.last; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+    kn.last = a;
+    setTarget(D.t + d / (2 * Math.PI * TURNS), true);
+});
+['pointerup', 'pointercancel'].forEach((ev) => knob.addEventListener(ev, () => { if (kn) { kn = null; D.dragging = false; afterTuning(); } }));
+
+// --- Gammes (touches de piano) ---
+function setBand(b, silent) {
+    if (!BANDS[b] || b === D.band) return;
+    D.pos[D.band] = D.t;
+    leaveDirect();
+    D.band = b; D.t = D.c = D.pos[b];
+    document.querySelectorAll('.pkey').forEach((k) => k.setAttribute('aria-pressed', String(k.dataset.band === b)));
+    if (!silent) radio.thunk(140);
+    radio.applyTone(); drawDial(); persist();
+}
+$('piano').addEventListener('click', (e) => { const k = e.target.closest('.pkey'); if (k) setBand(k.dataset.band); });
+
+$('btn-caf').addEventListener('click', () => {
+    D.caf = !D.caf; $('btn-caf').setAttribute('aria-pressed', String(D.caf));
+    $('btn-caf').textContent = `CAF (calage auto) : ${D.caf ? 'OUI' : 'NON'}`; if (D.caf) afterTuning(); persist();
+});
+
+function nearest(p) {
+    let best = null;
+    stationsOfBand().forEach((s) => { const d = Math.abs(s.p - p) * dialSpan(); if (!best || d < best.dpx) best = { st: s, dpx: d }; });
+    return best;
+}
+const qualityOf = (dpx) => dpx <= LOCK_PX ? 1 : dpx >= FADE_PX ? 0 : Math.pow((FADE_PX - dpx) / (FADE_PX - LOCK_PX), 1.5);
+
+// --- Se placer sur une station (depuis une liste) ---
+function tuneToPreset(st) {
+    radio.powerOn();
+    leaveDirect();
+    if (st.band !== D.band) setBand(st.band, true);
+    D.t = st.p; delete radio.failed[st.id];
+    if (activeMode !== 'tsf') D.c = D.t;
+    persist(); ui.refresh();
+}
+function playDirect(st) {
+    radio.powerOn();
+    radio.direct = true;
+    radio.connect(st);
+}
+
+/* ============================================================
+   6. ŒIL MAGIQUE
+   ============================================================ */
+function drawEye(q) {
+    const g = eyeCv.getContext('2d'), s = 112, c = s / 2;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, s, s);
+    g.fillStyle = '#050a08'; g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+    if (!radio.power) return;
+    const glow = 0.8 + 0.2 * Math.sin(performance.now() / 180) * (1 - q);
+    const gr = g.createRadialGradient(c, c, 4, c, c, 44);
+    gr.addColorStop(0, `rgba(215,255,230,${0.95 * glow})`); gr.addColorStop(0.45, `rgba(52,211,153,${0.95 * glow})`); gr.addColorStop(1, 'rgba(4,120,87,0.9)');
+    g.fillStyle = gr; g.beginPath(); g.arc(c, c, 44, 0, Math.PI * 2); g.fill();
+    const a = (1 - q) * 1.3 + 0.07;   // le secteur sombre se ferme quand on est calé
+    g.fillStyle = '#031510';
+    [-Math.PI / 2, Math.PI / 2].forEach((dir, i) => { g.beginPath(); g.moveTo(c, c); g.arc(c, c, 46, dir - a * (i ? 0.45 : 1), dir + a * (i ? 0.45 : 1)); g.closePath(); g.fill(); });
+    g.fillStyle = '#0a0f0d'; g.beginPath(); g.arc(c, c, 6, 0, Math.PI * 2); g.fill();
+}
+
+/* ============================================================
+   7. BOUCLE PRINCIPALE
+   ============================================================ */
+let lastT = performance.now(), lastAria = 0;
+function loop(now) {
+    const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+    // l'aiguille suit avec un peu d'inertie, comme tirée par une corde
+    const diff = D.t - D.c;
+    D.c = Math.abs(diff) < 1e-5 ? D.t : D.c + diff * (1 - Math.exp(-dt * 11));
+
+    const px = D.pad + D.c * dialSpan();
+    needle.style.transform = `translateX(${px.toFixed(1)}px)`;
+    knobFace.style.transform = `rotate(${(D.c * TURNS * 360).toFixed(1)}deg)`;
+
+    const near = nearest(D.c);
+    const nearQ = near ? qualityOf(near.dpx) : 0;
+    let activeQ = nearQ;
+    if (radio.active && radio.active.band) {
+        activeQ = radio.active.band === D.band ? qualityOf(Math.abs(radio.active.p - D.c) * dialSpan()) : 0;
+    }
+    const sigQ = radio.power ? (radio.direct ? (radio.el ? 1 : 0) : nearQ) : 0;
+    D.eye += (sigQ - D.eye) * (1 - Math.exp(-dt * 9));
+
+    // nom de la station près de l'aiguille
+    const showTag = radio.power && !radio.direct && near && near.dpx < FADE_PX * 1.1;
+    tag.textContent = showTag ? near.st.name : '';
+    tag.style.opacity = showTag ? '1' : '0';
+
+    if (radio.power && !radio.direct) {
+        // on ne lance un flux que si l'on reste calé quelques instants
+        if (near && near.dpx <= LOCK_PX) {
+            const failed = radio.failed[near.st.id] && now - radio.failed[near.st.id] < 20000;
+            if (radio.active !== near.st && !failed) {
+                D.dwell += dt;
+                if (D.dwell > 0.3) { D.dwell = 0; radio.connect(near.st); }
+            } else D.dwell = 0;
+        } else D.dwell = 0;
+        // on coupe le flux quand on s'en est éloigné
+        if (radio.active && radio.active.band) {
+            if (activeQ <= 0.001) { D.away += dt; if (D.away > (radio.active.band !== D.band ? 0.4 : 1.2)) { D.away = 0; radio.release(); } } else D.away = 0;
+        }
+    }
+    radio.applyLevels(radio.active && radio.active.band ? activeQ : (radio.el ? 1 : 0), near ? near.dpx : 99, D.band, nearQ);
+    drawEye(D.eye);
+
+    // affichages
+    const B = Bd(), f = freqOf(D.c);
+    $('display-band').textContent = `GAMME : ${B.label}`;
+    $('display-freq').textContent = `${f.toFixed(B.dec)} ${B.unit}`;
+    const sig = Math.round(sigQ * 100);
+    if (sig !== D.lastSig) { D.lastSig = sig; $('display-sig').textContent = `Signal ${sig}%`; }
+    if (now - lastAria > 250) {
+        lastAria = now;
+        const v = Math.round(D.c * 100), txt = `${f.toFixed(B.dec)} ${B.unit}`;
+        surface.setAttribute('aria-valuenow', v); surface.setAttribute('aria-valuetext', txt);
+        knob.setAttribute('aria-valuenow', v); knob.setAttribute('aria-valuetext', txt);
+    }
+    requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   8. INTERFACE : listes, onglets, modes, favoris
+   ============================================================ */
+let activeMode = 'tsf', statusText = '', toastTimer = null;
+const ui = {
+    setStatus(t) { statusText = t; $('station-status').textContent = t; $('status-footer').textContent = t; },
+    toast(t) { $('status-footer').textContent = t; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('status-footer').textContent = statusText || 'Prêt'; }, 4000); },
+    refresh() { updateUI(); renderPresets(); }
+};
+
+function isFavorite(st) { return !!st && favorites.some((f) => (st.id && f.id === st.id) || f.name === st.name); }
+function toggleFavoriteCurrent() {
+    const st = radio.active; if (!st) return;
+    if (isFavorite(st)) favorites = favorites.filter((f) => !((st.id && f.id === st.id) || f.name === st.name));
+    else favorites.push({ id: st.id, name: st.name, favicon: st.favicon || null, url_resolved: (st.urls && st.urls[0]) || st.url_resolved || st.url, countrycode: st.countrycode || st.cc || '', preset: !!st.band });
+    saveFavorites(); updateUI();
+}
+function saveFavorites() {
+    store.set('tsf_favorites', favorites);
+    $('fav-count').textContent = favorites.length; renderFavList();
+}
+
+function stationRow(st, sub, tagText, onClick, extra) {
+    const item = document.createElement('div');
+    item.className = 'p-2 rounded bg-stone-950/80 border flex justify-between items-center cursor-pointer hover:border-amber-600 transition ' + (radio.active && st.id && radio.active.id === st.id ? 'border-amber-600' : 'border-stone-800');
+    item.tabIndex = 0; item.setAttribute('role', 'button');
+    const left = document.createElement('div'); left.className = 'truncate mr-2 flex items-center space-x-2';
+    const img = document.createElement('img'); img.className = 'w-6 h-6 rounded object-cover bg-stone-900 flex-shrink-0'; img.alt = ''; img.src = iconOf(st);
+    img.onerror = () => { img.onerror = null; img.src = badge(st.name); };
+    const txt = document.createElement('div'); txt.className = 'truncate';
+    const n = document.createElement('p'); n.className = 'font-bold text-amber-500 truncate'; n.textContent = st.name;
+    const s = document.createElement('p'); s.className = 'text-[9px] text-stone-500 truncate'; s.textContent = sub;
+    txt.appendChild(n); txt.appendChild(s); left.appendChild(img); left.appendChild(txt);
+    const tg = document.createElement('span'); tg.className = 'px-1.5 py-0.5 rounded bg-amber-950 text-amber-500 text-[9px] font-bold flex-shrink-0'; tg.textContent = tagText;
+    item.appendChild(left); item.appendChild(tg);
+    if (extra) item.appendChild(extra);
+    item.addEventListener('click', onClick);
+    item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } });
+    return item;
+}
+
+function renderPresets() {
+    const box = $('preset-list'); box.textContent = '';
+    BAND_ORDER.forEach((b) => {
+        const list = PRESETS.filter((s) => s.band === b).sort((x, y) => x.f - y.f);
+        if (!list.length) return;
+        const h = document.createElement('div'); h.className = 'text-[10px] text-stone-500 uppercase tracking-widest pt-1'; h.textContent = `${BANDS[b].label} (${BANDS[b].min}-${BANDS[b].max} ${BANDS[b].unit})`;
+        box.appendChild(h);
+        list.forEach((st) => box.appendChild(stationRow(st, st.name === 'RTL' && b === 'GO' ? 'Ancienne fréquence historique' : 'Cliquez pour vous placer dessus', fmtFreq(st), () => tuneToPreset(st))));
+    });
+}
+
+function renderFavList() {
+    const box = $('fav-list'); box.textContent = '';
+    if (!favorites.length) { const d = document.createElement('div'); d.className = 'text-center text-stone-500 py-4'; d.textContent = 'Aucune radio dans vos favoris.'; box.appendChild(d); return; }
+    favorites.forEach((fv) => {
+        const preset = fv.id && presetById(fv.id);
+        const del = document.createElement('button'); del.className = 'text-red-500 hover:text-red-400 p-1'; del.setAttribute('aria-label', 'Retirer des favoris'); del.innerHTML = '<i class="fa-solid fa-trash text-xs"></i>';
+        del.addEventListener('click', (e) => { e.stopPropagation(); favorites = favorites.filter((x) => x !== fv); saveFavorites(); updateUI(); });
+        box.appendChild(stationRow(preset || fv, preset ? 'Cadran' : 'Favori enregistré', preset ? fmtFreq(preset) : (fv.countrycode || 'WW'), () => {
+            if (preset) tuneToPreset(preset); else playDirect({ id: fv.id, name: fv.name, favicon: fv.favicon, url_resolved: fv.url_resolved, countrycode: fv.countrycode });
+        }, del));
+    });
+}
+
+function switchTab(tab) {
+    ['dial', 'api', 'fav'].forEach((t) => {
+        $('tab-view-' + t).classList.toggle('hidden', t !== tab);
+        $('tab-btn-' + t).className = t === tab ? 'font-bold text-amber-500 border-b-2 border-amber-500 pb-0.5' : 'font-bold text-stone-500 hover:text-amber-500 pb-0.5';
+        $('tab-btn-' + t).setAttribute('aria-selected', String(t === tab));
+    });
+    if (tab === 'fav') renderFavList();
+    if (tab === 'api' && !$('station-list').childElementCount) fetchStations('');
+}
+
+/* --- Annuaire mondial --- */
+let searchTimer = null;
+const QUICK = [['Toutes', ''], ['France', 'FR'], ['Info', 'info'], ['Japon', 'Japan'], ['Jazz', 'Jazz'], ['Classique', 'classique']];
+QUICK.forEach(([label, term]) => {
+    const b = document.createElement('button'); b.className = 'bg-stone-800 hover:bg-stone-700 text-stone-300 px-2 py-0.5 rounded border border-stone-700'; b.textContent = label;
+    b.addEventListener('click', () => { $('search-input').value = term; fetchStations(term); });
+    $('quick-chips').appendChild(b);
+});
+async function fetchStations(query) {
+    const status = $('api-status'), box = $('station-list');
+    status.textContent = 'Recherche...'; box.innerHTML = '<div class="text-center text-stone-500 py-4">Chargement...</div>';
+    try {
+        let path = '/json/stations/search?limit=60&hidebroken=true&order=clickcount&reverse=true';
+        const term = query.trim().toLowerCase();
+        if (['japan', 'japon', 'jp'].includes(term)) path += '&countrycode=JP';
+        else if (['fr', 'france'].includes(term)) path += '&countrycode=FR';
+        else if (['jazz', 'rock', 'pop'].includes(term)) path += `&tag=${term}`;
+        else if (['classique', 'classical'].includes(term)) path += '&tag=classical';
+        else if (['info', 'news', 'actu'].includes(term)) path += '&tag=news&countrycode=FR';
+        else if (term) path += `&name=${encodeURIComponent(query.trim())}`;
+        let list = await rbFetch(path);
+        list = list.filter((s) => okUrl(s.url_resolved) || okUrl(s.url)).slice(0, 40);
+        box.textContent = '';
+        if (!list.length) { box.innerHTML = '<div class="text-center text-stone-500 py-4">Aucune station trouvée</div>'; }
+        list.forEach((s) => {
+            const st = { id: s.stationuuid, name: s.name.trim() || 'Station', favicon: s.favicon || null, url_resolved: s.url_resolved, url: s.url, countrycode: s.countrycode, tags: s.tags };
+            box.appendChild(stationRow(st, s.tags || 'Radio Live', s.countrycode || 'WW', () => playDirect(st)));
+        });
+        status.textContent = `${list.length} trouvées`;
+    } catch (e) {
+        status.textContent = 'Annuaire injoignable';
+        box.innerHTML = '<div class="text-center text-stone-500 py-4">Impossible de joindre l\'annuaire. Les stations du cadran restent disponibles.</div>';
+    }
+}
+$('search-input').addEventListener('input', (e) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchStations(e.target.value), 400); });
+
+/* --- Modes d'affichage --- */
+function switchMode(mode) {
+    activeMode = mode;
+    document.querySelectorAll('.mode-panel').forEach((p) => p.classList.remove('active'));
+    $('mode-' + mode).classList.add('active');
+    ['tsf', 'modern', 'compact'].forEach((m) => {
+        $('btn-mode-' + m).className = m === mode ? 'px-3 py-1.5 rounded-lg font-bold bg-amber-600 text-stone-950 transition' : 'px-3 py-1.5 rounded-lg font-bold text-stone-400 hover:text-stone-200 transition';
+    });
+    if (mode === 'tsf') requestAnimationFrame(resizeDial);
+}
+
+function updateUI() {
+    const on = radio.power, st = radio.active;
+    $('btn-power').classList.toggle('text-amber-400', on);
+    $('btn-power').style.boxShadow = on ? '0 0 15px #f59e0b' : '';
+    $('m-play-btn').innerHTML = on ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+    dialLight(); lampLabel(); extras(on, st);
+
+    const name = st ? st.name : (on ? 'Souffle entre deux stations' : 'RECEPTION OFF');
+    const sub = st && st.band ? fmtFreq(st) : (st ? (st.tags || 'Station web') : (on ? 'Cherchez une station avec l\'aiguille' : '--'));
+    const state = !on ? 'Appuyez sur POWER' : (radio.connecting ? statusText : (st ? (statusText || 'En direct') : 'Ajustez l\'accord...'));
+    const icon = st ? iconOf(st) : GENERIC_ICON;
+    $('station-title').textContent = name; $('station-nowplaying').textContent = sub; $('station-status').textContent = state;
+    $('tsf-favicon').src = icon;
+    $('m-title').textContent = name; $('m-nowplaying').textContent = sub; $('m-sub').textContent = state; $('m-favicon').src = icon;
+    $('m-status-tag').textContent = on ? (st ? 'Flux : Actif' : 'Flux : En attente') : 'Flux : Hors ligne';
+    $('c-title').textContent = name; $('c-nowplaying').textContent = sub;
+    const fav = isFavorite(st);
+    $('btn-fav').className = fav ? 'text-red-500 text-xs ml-1' : 'text-stone-600 hover:text-red-500 text-xs ml-1';
+    $('m-fav-btn').className = fav ? 'w-10 h-10 rounded-full bg-red-950/50 text-red-500 border border-red-800 flex items-center justify-center' : 'w-10 h-10 rounded-full bg-stone-800 text-stone-400 hover:text-red-500 flex items-center justify-center border border-stone-700';
+}
+function lampLabel() {
+    $('btn-lamp-filter').textContent = radio.mode === 'plain' ? 'Lampes : indisponible (flux direct)' : `Lampes : ${radio.lamp ? 'ON' : 'OFF'}`;
+}
+function dialLight() {
+    const el = $('dial-screen'), d = DIALS[dc()];
+    if (radio.power) {
+        el.style.setProperty('background', 'radial-gradient(circle at 50% 45%, ' + d[2] + ' 0%, ' + d[3] + ' 80%, #020617 100%)', 'important');
+        el.style.setProperty('box-shadow', 'inset 0 0 20px rgba(0,0,0,.7), 0 0 25px rgba(' + d[4] + ',.5)', 'important');
+    } else { el.style.removeProperty('background'); el.style.removeProperty('box-shadow'); }
+}
+
+/* --- Minuteur, couleur du cadran, ambiance --- */
+let sleepTimeout = null;
+$('sleep-select').addEventListener('change', (e) => {
+    clearTimeout(sleepTimeout);
+    if (e.target.value === 'off') { ui.toast('Minuteur désactivé'); return; }
+    ui.toast(`Extinction dans ${e.target.value} minutes`);
+    sleepTimeout = setTimeout(() => { radio.powerOff(); ui.refresh(); ui.toast('Minuteur : radio éteinte'); $('sleep-select').value = 'off'; }, parseInt(e.target.value, 10) * 60000);
+});
+$('dial-color-select').value = D.color;
+$('dial-color-select').addEventListener('change', (e) => { D.color = e.target.value; dialLight(); drawDial(); persist(); });
+
+
+/* --- Branchements --- */
+['tsf', 'modern', 'compact'].forEach((m) => $('btn-mode-' + m).addEventListener('click', () => switchMode(m)));
+$('btn-power').addEventListener('click', () => radio.togglePower());
+$('c-power').addEventListener('click', () => radio.togglePower());
+$('m-play-btn').addEventListener('click', () => radio.togglePower());
+$('btn-fav').addEventListener('click', toggleFavoriteCurrent);
+$('m-fav-btn').addEventListener('click', toggleFavoriteCurrent);
+$('btn-record').addEventListener('click', () => radio.toggleRecord());
+['tab-btn-dial', 'tab-btn-api', 'tab-btn-fav'].forEach((id) => $(id).addEventListener('click', () => switchTab(id.replace('tab-btn-', ''))));
+
+function syncVolume(v) {
+    radio.setVolume(v / 100);
+    ['knob-volume', 'm-volume', 'c-volume'].forEach((id) => { $(id).value = v; });
+    persist();
+}
+['knob-volume', 'm-volume', 'c-volume'].forEach((id) => $(id).addEventListener('input', (e) => syncVolume(+e.target.value)));
+$('eq-hiss').addEventListener('input', (e) => { radio.hiss = e.target.value / 100; persist(); });
+$('eq-crackle').addEventListener('input', (e) => radio.setCrackle(+e.target.value));
+$('eq-hum').addEventListener('input', (e) => radio.setHum(+e.target.value));
+$('eq-bass').addEventListener('input', (e) => radio.setBass(+e.target.value));
+$('eq-treble').addEventListener('input', (e) => radio.setTreble(+e.target.value));
+$('btn-lamp-filter').addEventListener('click', () => {
+    radio.lamp = !radio.lamp; radio.applyTone(); lampLabel(); persist();
+    if (radio.mode === 'plain') ui.toast("Cette radio diffuse un flux que le navigateur ne laisse pas filtrer : l'effet lampes jouera sur les flux compatibles.");
+});
+
+/* ============================================================
+   8bis. THÈMES, MÉMOIRES, VISUALISEUR, RÉVEIL, HISTORIQUE, MÉDIAS
+   ============================================================ */
+const THEMES = {
+    radiola: ['Radiola 1948 (bois)', '#f59e0b', '#522613', '#1a0c06', '#231008', 'amber'],
+    transistor: ['Transistor 1965 (ivoire)', '#d9381e', '#e9dfc7', '#b9ab8a', '#8a7b5a', 'red'],
+    hifi: ['Hi-fi 1978 (noir)', '#22d3ee', '#2a2a2e', '#0e0e10', '#050506', 'ice'],
+    neon: ['Néon 1985', '#f0abfc', '#3b0f55', '#12031c', '#7e22ce', 'pink'],
+    laque: ['Laqué rouge', '#fde68a', '#9b2226', '#4a0d0f', '#2a0507', 'amber'],
+    pastel: ['Pastel 1955', '#0e7490', '#8fd3d6', '#4f9aa0', '#2f6f75', 'cyan']
+};
+let themeKey = store.get('tsf_theme', 'radiola'); if (!THEMES[themeKey]) themeKey = 'radiola';
+let lightMode = store.get('tsf_light', 'dark'); if (['dark', 'light', 'auto'].indexOf(lightMode) < 0) lightMode = 'dark';
+function applyTheme(k, setDial) {
+    const t = THEMES[k], r = document.documentElement; themeKey = k;
+    r.dataset.acc = k; r.style.setProperty('--acc', t[1]); r.style.setProperty('--c2', t[2]); r.style.setProperty('--c1', t[3]); r.style.setProperty('--c3', t[4]);
+    if (k === 'transistor' || k === 'pastel') r.dataset.lc = '1'; else delete r.dataset.lc;
+    if (setDial) { D.color = t[5]; $('dial-color-select').value = D.color; dialLight(); drawDial(); }
+    store.set('tsf_theme', k); persist();
+}
+const LL = { dark: 'Sombre', light: 'Clair', auto: 'Auto' }, lightMQ = window.matchMedia('(prefers-color-scheme: light)');
+function applyLight() {
+    document.documentElement.classList.toggle('light', lightMode === 'light' || (lightMode === 'auto' && lightMQ.matches));
+    $('ambient-label').textContent = LL[lightMode]; store.set('tsf_light', lightMode);
+}
+$('btn-ambient').addEventListener('click', () => { lightMode = lightMode === 'dark' ? 'light' : lightMode === 'light' ? 'auto' : 'dark'; applyLight(); });
+lightMQ.addEventListener('change', () => { if (lightMode === 'auto') applyLight(); });
+Object.keys(THEMES).forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = THEMES[k][0]; $('theme-select').appendChild(o); });
+$('theme-select').value = themeKey;
+$('theme-select').addEventListener('change', (e) => applyTheme(e.target.value, true));
+
+/* --- Lecture d'une station mémorisée ou de l'historique --- */
+const playSt = (s) => { if (s.band) tuneToPreset(PRESETS.find((p) => p.id === s.id && p.band) || s); else playDirect(s); };
+function step(d) {
+    const L = stationsOfBand().slice().sort((a, b) => a.p - b.p); if (!L.length) return;
+    tuneToPreset(d > 0 ? (L.find((s) => s.p > D.t + 0.002) || L[0]) : (L.slice().reverse().find((s) => s.p < D.t - 0.002) || L[L.length - 1]));
+}
+
+/* --- 6 mémoires de station --- */
+const mem = store.get('tsf_mem', []);
+function recall(i) { if (!mem[i]) { ui.toast('M' + (i + 1) + ' est vide : clic long pour mémoriser'); return; } playSt(mem[i]); }
+function renderMems() {
+    const box = $('mems'); box.textContent = '';
+    for (let i = 0; i < 6; i++) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'mem' + (mem[i] ? ' set' : ''); b.textContent = 'M' + (i + 1);
+        b.title = mem[i] ? mem[i].name : 'Vide : clic long pour mémoriser';
+        b.setAttribute('aria-label', 'Mémoire ' + (i + 1) + (mem[i] ? ' : ' + mem[i].name : ' (vide)'));
+        let timer = null, long = false;
+        const save = () => {
+            if (!radio.active) { ui.toast('Aucune station en cours à mémoriser'); return; }
+            mem[i] = JSON.parse(JSON.stringify(radio.active)); store.set('tsf_mem', mem); renderMems(); ui.toast('M' + (i + 1) + ' : ' + radio.active.name);
+        };
+        b.addEventListener('pointerdown', () => { long = false; timer = setTimeout(() => { long = true; save(); }, 650); });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(timer)));
+        b.addEventListener('click', (e) => { if (long) { long = false; return; } if (e.shiftKey) save(); else recall(i); });
+        box.appendChild(b);
+    }
+}
+
+/* --- Historique --- */
+const hist = store.get('tsf_hist', []); let lastName = null;
+function renderHist() {
+    const box = $('hist'); box.textContent = '';
+    if (!hist.length) { box.textContent = 'Rien pour le moment.'; return; }
+    hist.forEach((h) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'block w-full text-left truncate hover:text-amber-500';
+        b.textContent = new Date(h.at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '  ' + h.st.name;
+        b.addEventListener('click', () => playSt(h.st)); box.appendChild(b);
+    });
+}
+
+/* --- Couleur de la pochette, historique, écran de verrouillage --- */
+let hue = 35;
+const hueOf = (s) => { let h = 0; for (const c of s || '') h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+function extras(on, st) {
+    if (st && st.name) {
+        hue = hueOf(st.name);
+        const card = $('m-title').parentElement; card.style.boxShadow = '0 0 30px hsla(' + hue + ',80%,50%,.35)'; card.style.borderColor = 'hsla(' + hue + ',70%,50%,.55)';
+        if (st.name !== lastName) {
+            lastName = st.name;
+            const i = hist.findIndex((h) => h.st.name === st.name); if (i >= 0) hist.splice(i, 1);
+            hist.unshift({ st: JSON.parse(JSON.stringify(st)), at: Date.now() }); hist.length = Math.min(hist.length, 12);
+            store.set('tsf_hist', hist); renderHist();
+        }
+    }
+    if ('mediaSession' in navigator) {
+        try {
+            navigator.mediaSession.metadata = on && st ? new MediaMetadata({ title: st.name, artist: st.band ? fmtFreq(st) : (st.tags || 'Station web'), album: 'Radio Hybride TSF', artwork: st.favicon ? [{ src: st.favicon }] : [] }) : null;
+            navigator.mediaSession.playbackState = on ? 'playing' : 'paused';
+        } catch (e) {}
+    }
+}
+if ('mediaSession' in navigator) {
+    [['play', () => { if (!radio.power) radio.togglePower(); }], ['pause', () => { if (radio.power) radio.togglePower(); }], ['nexttrack', () => step(1)], ['previoustrack', () => step(-1)]]
+        .forEach((a) => { try { navigator.mediaSession.setActionHandler(a[0], a[1]); } catch (e) {} });
+}
+
+/* --- Visualiseur --- */
+const viz = $('viz'), vx = viz.getContext('2d');
+function drawViz() {
+    requestAnimationFrame(drawViz);
+    if (activeMode !== 'modern') return;
+    const W = viz.width, H = viz.height, n = 32, bw = W / n, a = radio.an, t = performance.now() / 600;
+    const data = new Uint8Array(a ? a.frequencyBinCount : 0); if (a) a.getByteFrequencyData(data);
+    vx.clearRect(0, 0, W, H);
+    for (let i = 0; i < n; i++) {
+        const v = radio.power && data.length ? data[Math.min(data.length - 1, i + 1)] / 255 : 0, h = Math.max(0.05 + 0.03 * Math.sin(t + i * 0.5), v) * H;
+        vx.fillStyle = 'hsl(' + ((hue + i * 5) % 360) + ',85%,' + Math.round(45 + v * 20) + '%)'; vx.fillRect(i * bw + 2, H - h, bw - 4, h);
+    }
+}
+
+/* --- Réveil --- */
+const alarm = store.get('tsf_alarm', { t: '07:00', on: false }); let alarmDone = '';
+function alarmUI() { const b = $('alarm-btn'); b.textContent = alarm.on ? 'ON' : 'OFF'; b.setAttribute('aria-pressed', String(alarm.on)); }
+$('alarm-time').value = alarm.t;
+$('alarm-time').addEventListener('change', (e) => { alarm.t = e.target.value; store.set('tsf_alarm', alarm); });
+$('alarm-btn').addEventListener('click', () => {
+    alarm.on = !alarm.on; store.set('tsf_alarm', alarm); alarmUI();
+    ui.toast(alarm.on ? 'Réveil réglé à ' + alarm.t + ' : laissez cette page ouverte' : 'Réveil désactivé');
+});
+setInterval(() => {
+    const d = new Date(), key = d.toDateString() + d.toTimeString().slice(0, 5);
+    if (!alarm.on || d.toTimeString().slice(0, 5) !== alarm.t || alarmDone === key) return;
+    alarmDone = key; radio.powerOn();
+    const s = mem[0] || (hist[0] && hist[0].st) || favorites[0]; if (s) playSt(s);
+    ui.toast('Réveil !'); ui.refresh();
+}, 15000);
+
+/* --- Raccourcis clavier --- */
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+    const k = e.key.toLowerCase();
+    if (k >= '1' && k <= '6') recall(+k - 1);
+    else if (k === 'p') radio.togglePower();
+    else if (k === 'n') step(1);
+    else if (k === 'b') step(-1);
+    else if (k === 'f') toggleFavoriteCurrent();
+    else if (k === 't') { const ks = Object.keys(THEMES); applyTheme(ks[(ks.indexOf(themeKey) + 1) % ks.length], true); $('theme-select').value = themeKey; }
+    else if (k === '+' || k === '-') syncVolume(clamp(Math.round(radio.vol * 100) + (k === '+' ? 5 : -5), 0, 100));
+});
+
+const _setBand = setBand; setBand = function (b, s) { _setBand(b, s); dialLight(); };
+applyTheme(themeKey, false); applyLight(); renderMems(); renderHist(); alarmUI(); requestAnimationFrame(drawViz);
+
+/* ============================================================
+   9. DÉMARRAGE
+   ============================================================ */
+$('knob-volume').value = Math.round(radio.vol * 100); $('m-volume').value = Math.round(radio.vol * 100); $('c-volume').value = Math.round(radio.vol * 100);
+$('eq-hiss').value = Math.round(radio.hiss * 100);
+lampLabel();
+$('btn-caf').setAttribute('aria-pressed', String(D.caf)); $('btn-caf').textContent = `CAF (calage auto) : ${D.caf ? 'OUI' : 'NON'}`;
+document.querySelectorAll('.pkey').forEach((k) => k.setAttribute('aria-pressed', String(k.dataset.band === D.band)));
+$('fav-count').textContent = favorites.length;
+renderPresets(); renderFavList(); switchTab('dial'); switchMode('tsf');
+resizeDial(); updateUI();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
